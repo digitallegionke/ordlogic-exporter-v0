@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { mockApi } from "@/lib/mockData"
+import { supabase } from "@/lib/supabaseClient"
 import { Card, CardContent } from "@/components/ui/card"
 import { Building2 } from "lucide-react"
 
@@ -19,21 +19,48 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     checkAuth()
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event: import('@supabase/supabase-js').AuthChangeEvent, session: import('@supabase/supabase-js').Session | null) => {
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          if (session?.user) {
+            setAuthenticated(true)
+          }
+        } else if (event === 'SIGNED_OUT' || !session?.user) {
+          setAuthenticated(false)
+          router.push("/sign-in")
+        }
+      }
+    )
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
   const checkAuth = async () => {
     try {
-      const { session } = await mockApi.getSession()
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      // If there's a refresh token error, clear the session and redirect
+      if (error?.message?.includes('refresh_token_not_found') || error?.message?.includes('Invalid Refresh Token')) {
+        await supabase.auth.signOut()
+        // Clear any corrupted local storage
+        localStorage.clear()
+        router.push("/sign-in")
+        setLoading(false)
+        return
+      }
+      
       if (session?.user) {
         setAuthenticated(true)
       } else {
-        router.push("/exporter/signup")
+        router.push("/sign-in")
       }
     } catch (error) {
-      router.push("/exporter/signup")
-    } finally {
-      setLoading(false)
+      console.error('Auth check error:', error)
+      router.push("/sign-in")
     }
+    setLoading(false)
   }
 
   if (loading) {
@@ -50,7 +77,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (!authenticated) {
-    return null // Will redirect to signup
+    return null // Will redirect to sign-in
   }
 
   return <>{children}</>

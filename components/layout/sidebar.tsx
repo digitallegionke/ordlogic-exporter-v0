@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Building2, MapPin, ShoppingCart, User, Settings } from "lucide-react"
+import { Building2, MapPin, ShoppingCart, User, Settings, Home } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { UserNav } from "./user-nav"
 
 const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Profile", href: "/exporter/profile", icon: User },
   { name: "Farms", href: "/exporter/farms", icon: MapPin },
   { name: "Order", href: "/exporter/order", icon: ShoppingCart },

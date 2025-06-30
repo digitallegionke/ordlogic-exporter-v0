@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import toast, { Toaster } from "react-hot-toast"
-import { Building2 } from "lucide-react"
-import { mockApi } from "@/lib/mockData"
+import { Building2, Eye, EyeOff } from "lucide-react"
+import { supabase } from "@/lib/supabaseClient"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -22,32 +22,30 @@ export default function SignupPage() {
     phone: "",
     password: "",
   })
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      // Simulate user creation
-      const { user, error: authError } = await mockApi.signUp({
+      // Create user in Supabase Auth
+      const { data: signUpData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       })
-
       if (authError) throw authError
-
+      const user = signUpData.user
       if (user) {
-        // Simulate exporter record creation
-        const { error: exporterError } = await mockApi.createExporter({
-          user_id: user.id,
+        // Create exporter record in Supabase
+        const { error: exporterError } = await supabase.from('exporters').insert({
+          auth_user_id: user.id,
           company_name: formData.companyName,
           contact_person: formData.contactPerson,
           email: formData.email,
           phone: formData.phone,
         })
-
         if (exporterError) throw exporterError
-
         toast.success("Account created successfully! Welcome to OrdLogic.")
         router.push("/exporter/profile")
       }
@@ -66,20 +64,20 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-green-50 via-white to-green-100">
       <Toaster position="top-right" />
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-xl rounded-2xl border-0">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Building2 className="h-12 w-12 text-green-600" />
           </div>
-          <CardTitle className="text-2xl font-bold">Create Exporter Account</CardTitle>
-          <CardDescription>Join OrdLogic to connect with farms and manage your produce orders</CardDescription>
+          <CardTitle className="text-3xl font-extrabold tracking-tight">Create Exporter Account</CardTitle>
+          <CardDescription className="text-base text-gray-500">Join OrdLogic to connect with farms and manage your produce orders</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <Label htmlFor="companyName">Company Name</Label>
               <Input
@@ -90,6 +88,7 @@ export default function SignupPage() {
                 value={formData.companyName}
                 onChange={handleChange}
                 placeholder="Enter your company name"
+                className="mt-1"
               />
             </div>
 
@@ -103,6 +102,7 @@ export default function SignupPage() {
                 value={formData.contactPerson}
                 onChange={handleChange}
                 placeholder="Enter contact person name"
+                className="mt-1"
               />
             </div>
 
@@ -116,6 +116,7 @@ export default function SignupPage() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter your email"
+                className="mt-1"
               />
             </div>
 
@@ -128,40 +129,52 @@ export default function SignupPage() {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
+                className="mt-1"
               />
             </div>
 
-            <div>
+            <div className="relative">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Create a password"
                 minLength={6}
+                className="mt-1 pr-10"
               />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold shadow-md" disabled={loading}>
               {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
-          <div className="mt-6 text-center">
+          <div className="my-6 flex items-center">
+            <div className="flex-grow border-t border-gray-200" />
+            <span className="mx-4 text-gray-400 text-xs">or</span>
+            <div className="flex-grow border-t border-gray-200" />
+          </div>
+          <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  toast.success("Signed in with existing account")
-                  router.push("/exporter/profile")
-                }}
-                className="font-medium text-green-600 hover:text-green-500"
+              Already have an account?{' '}
+              <a
+                href="/sign-in"
+                className="font-medium text-green-600 hover:text-green-500 transition-colors"
               >
                 Sign in here
-              </button>
+              </a>
             </p>
           </div>
         </CardContent>
