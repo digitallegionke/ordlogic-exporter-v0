@@ -28,7 +28,8 @@ export default function OrderPage() {
     { produceType: "", quantity: "", deliveryDate: "", notes: "" },
   ]);
   const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
-  const [showDialog, setShowDialog] = useState(false);
+  const [showNewOrderDialog, setShowNewOrderDialog] = useState(false);
+  const [showEntryDetailsDialog, setShowEntryDetailsDialog] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
 
   const handleEntryChange = (idx: number, field: string, value: string) => {
@@ -53,7 +54,8 @@ export default function OrderPage() {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error("Not authenticated");
-      let { data: exporter, error: exporterError } = await supabase
+      let exporter: { id: number } | null = null;
+      let { data: exporterData, error: exporterError } = await supabase
         .from('exporters')
         .select('id')
         .eq('auth_user_id', user.id)
@@ -75,7 +77,10 @@ export default function OrderPage() {
         exporter = newExporter;
       } else if (exporterError) {
         throw new Error(`Failed to look up user profile: ${exporterError.message}`);
+      } else {
+        exporter = exporterData;
       }
+      if (!exporter) throw new Error("Failed to find or create exporter profile");
       // Insert order
       const { data: order, error: orderError } = await supabase
         .from('exporter_orders')
@@ -135,9 +140,12 @@ export default function OrderPage() {
       <Toaster position="top-right" />
       
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Order</h1>
-          <p className="text-gray-600">Submit a new produce order</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Order</h1>
+            <p className="text-gray-600">Submit a new produce order</p>
+          </div>
+          <Button onClick={() => setShowNewOrderDialog(true)} variant="default">+ New Order</Button>
         </div>
 
         <Card>
@@ -148,9 +156,71 @@ export default function OrderPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            {orders.length === 0 ? (
+              <div className="text-gray-500">No orders found.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border-separate border-spacing-0 rounded-lg overflow-hidden shadow-sm">
+                  <thead className="sticky top-0 z-10 bg-white/90 backdrop-blur">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold border-b">Order Date</th>
+                      <th className="px-4 py-3 text-left font-semibold border-b">Produce Type</th>
+                      <th className="px-4 py-3 text-left font-semibold border-b">Quantity (kg)</th>
+                      <th className="px-4 py-3 text-left font-semibold border-b">Delivery Date</th>
+                      <th className="px-4 py-3 text-left font-semibold border-b">Notes</th>
+                      <th className="px-4 py-3 text-center font-semibold border-b">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map(order => (
+                      order.exporter_order_entries.map((entry: any, idx: number) => (
+                        <tr
+                          key={order.id + '-' + idx}
+                          className={
+                            idx % 2 === 0
+                              ? "bg-gray-50 hover:bg-green-50 transition"
+                              : "bg-white hover:bg-green-50 transition"
+                          }
+                        >
+                          <td className="px-4 py-3 border-b">{new Date(order.created_at).toLocaleDateString()}</td>
+                          <td className="px-4 py-3 border-b">{entry.produce_type}</td>
+                          <td className="px-4 py-3 border-b">{entry.expected_quantity}</td>
+                          <td className="px-4 py-3 border-b">{entry.delivery_date ? new Date(entry.delivery_date).toLocaleDateString() : ''}</td>
+                          <td className="px-4 py-3 border-b">{entry.special_notes}</td>
+                          <td className="px-4 py-3 border-b text-center">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => { setSelectedEntry({ ...entry, orderDate: order.created_at }); setShowEntryDetailsDialog(true); }}
+                            >
+                              View Details
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        {/* Order Details Dialog for New Order */}
+        <Dialog open={showNewOrderDialog} onOpenChange={setShowNewOrderDialog}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Order Details</DialogTitle>
+              <DialogDescription>
+                Fill in the details for your new order.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={async (e) => {
+              await handleSubmit(e);
+              setShowNewOrderDialog(false);
+            }} className="space-y-6">
               {entries.map((entry, idx) => (
-                <div key={idx} className="border rounded-lg p-4 mb-4 bg-gray-50 relative">
+                <div key={idx} className="border rounded-lg p-4 mb-4 bg-gray-50">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor={`produceType-${idx}`}>Produce Type *</Label>
@@ -202,79 +272,38 @@ export default function OrderPage() {
                     </div>
                   </div>
                   {entries.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={() => removeEntry(idx)}
-                    >
-                      Remove
-                    </Button>
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeEntry(idx)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}
               <Button type="button" variant="outline" onClick={addEntry} className="mb-2">+ Add Another Entry</Button>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading || entries.some(e => !e.produceType)}
-              >
-                {loading ? "Submitting..." : "Submit Orders"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card className="mt-8 shadow-lg rounded-xl">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold">My Orders</CardTitle>
-            <p className="text-gray-500 text-sm mt-1">Preview your recent produce orders below.</p>
-          </CardHeader>
-          <CardContent>
-            {orders.length === 0 ? (
-              <div className="text-gray-500">No orders found.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm border-separate border-spacing-0 rounded-lg overflow-hidden shadow-sm">
-                  <thead className="sticky top-0 z-10 bg-white/90 backdrop-blur">
-                    <tr>
-                      <th className="px-4 py-3 text-left font-semibold border-b">Order Date</th>
-                      <th className="px-4 py-3 text-left font-semibold border-b">Produce Type</th>
-                      <th className="px-4 py-3 text-left font-semibold border-b">Quantity (kg)</th>
-                      <th className="px-4 py-3 text-left font-semibold border-b">Delivery Date</th>
-                      <th className="px-4 py-3 text-left font-semibold border-b">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map(order => (
-                      order.exporter_order_entries.map((entry: any, idx: number) => (
-                        <tr
-                          key={order.id + '-' + idx}
-                          className={
-                            idx % 2 === 0
-                              ? "bg-gray-50 hover:bg-green-50 transition cursor-pointer"
-                              : "bg-white hover:bg-green-50 transition cursor-pointer"
-                          }
-                          onClick={() => { setSelectedEntry({ ...entry, orderDate: order.created_at }); setShowDialog(true); }}
-                        >
-                          <td className="px-4 py-3 border-b">{new Date(order.created_at).toLocaleDateString()}</td>
-                          <td className="px-4 py-3 border-b">{entry.produce_type}</td>
-                          <td className="px-4 py-3 border-b">{entry.expected_quantity}</td>
-                          <td className="px-4 py-3 border-b">{entry.delivery_date ? new Date(entry.delivery_date).toLocaleDateString() : ''}</td>
-                          <td className="px-4 py-3 border-b">{entry.special_notes}</td>
-                        </tr>
-                      ))
-                    ))}
-                  </tbody>
-                </table>
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading || entries.some(e => !e.produceType)}
+                >
+                  {loading ? "Submitting..." : "Submit Orders"}
+                </Button>
+                <DialogClose asChild>
+                  <Button type="button" variant="secondary" className="w-full">Cancel</Button>
+                </DialogClose>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </form>
+          </DialogContent>
+        </Dialog>
         {/* Order Details Dialog */}
-        <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent>
+        <Dialog open={showEntryDetailsDialog} onOpenChange={setShowEntryDetailsDialog}>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Order Entry Details</DialogTitle>
               <DialogDescription>
