@@ -36,6 +36,20 @@ const MOCK_FARMERS = [
   },
 ];
 
+// Haversine formula for distance in km
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export default function MatchFarmersPage({ params }: { params: { requestId: string } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -66,13 +80,37 @@ export default function MatchFarmersPage({ params }: { params: { requestId: stri
         dbFarmers = MOCK_FARMERS;
       }
       // Filter logic
-      const matches = dbFarmers.filter((farmer: any) => {
+      let matches = dbFarmers.filter((farmer: any) => {
         const hasProduce = Array.isArray(farmer.produce_types) && farmer.produce_types.includes(req.produce_type);
         const enoughQty = Number(farmer.quantity_available) >= Number(req.quantity);
         const organicOk = !req.organic_required || !!farmer.organic;
-        // Location logic: simple string match for now
-        const locationOk = !req.preferred_location || (farmer.location && farmer.location.toLowerCase().includes(req.preferred_location.toLowerCase()));
+        // Location logic: use Haversine if both have lat/lng, else fallback to text
+        let locationOk = true;
+        let distance = null;
+        if (
+          req.latitude && req.longitude &&
+          farmer.latitude && farmer.longitude
+        ) {
+          distance = haversine(
+            Number(req.latitude),
+            Number(req.longitude),
+            Number(farmer.latitude),
+            Number(farmer.longitude)
+          );
+          // Only include farmers within 50km (adjust as needed)
+          locationOk = distance <= 50;
+        } else if (req.preferred_location) {
+          locationOk = farmer.location && farmer.location.toLowerCase().includes(req.preferred_location.toLowerCase());
+        }
+        // Attach distance for sorting/display
+        farmer._distance = distance;
         return hasProduce && enoughQty && organicOk && locationOk;
+      });
+      // Sort by distance if available
+      matches = matches.sort((a, b) => {
+        if (a._distance == null) return 1;
+        if (b._distance == null) return -1;
+        return a._distance - b._distance;
       });
       setFarmers(matches);
       setLoading(false);
@@ -113,6 +151,9 @@ export default function MatchFarmersPage({ params }: { params: { requestId: stri
                       <div className="text-sm text-muted-foreground">{farmer.location} {farmer.organic && <span className="ml-2 text-green-600">Organic</span>}</div>
                       <div className="text-sm mt-1">Available: {farmer.quantity_available}kg</div>
                       <div className="text-xs mt-1">Produce: {Array.isArray(farmer.produce_types) ? farmer.produce_types.join(", ") : farmer.produce_types}</div>
+                      {typeof farmer._distance === 'number' && (
+                        <div className="text-xs text-blue-600 mt-1">Distance: {farmer._distance.toFixed(1)} km</div>
+                      )}
                     </div>
                     <Button className="mt-4 md:mt-0" onClick={() => handleSelect(farmer)}>
                       Select

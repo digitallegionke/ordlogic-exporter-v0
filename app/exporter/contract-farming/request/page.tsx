@@ -32,6 +32,8 @@ export default function ContractFarmingRequestPage() {
     produceType: "",
     quantity: "",
     preferredLocation: "",
+    latitude: "",
+    longitude: "",
     organicRequired: "No",
     handlingInstructions: "",
     dropoffLocation: "",
@@ -52,6 +54,8 @@ export default function ContractFarmingRequestPage() {
         produce_type: form.produceType,
         quantity: form.quantity ? Number(form.quantity) : null,
         preferred_location: form.preferredLocation,
+        latitude: form.latitude ? Number(form.latitude) : null,
+        longitude: form.longitude ? Number(form.longitude) : null,
         organic_required: form.organicRequired === "Yes",
         handling_instructions: form.handlingInstructions,
         dropoff_location: form.dropoffLocation,
@@ -62,6 +66,8 @@ export default function ContractFarmingRequestPage() {
         produceType: "",
         quantity: "",
         preferredLocation: "",
+        latitude: "",
+        longitude: "",
         organicRequired: "No",
         handlingInstructions: "",
         dropoffLocation: "",
@@ -117,6 +123,28 @@ export default function ContractFarmingRequestPage() {
                   placeholder="Enter preferred location"
                   required
                 />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label>Latitude</Label>
+                  <Input
+                    type="number"
+                    value={form.latitude}
+                    onChange={(e) => handleChange("latitude", e.target.value)}
+                    placeholder="Latitude (optional)"
+                    step="any"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label>Longitude</Label>
+                  <Input
+                    type="number"
+                    value={form.longitude}
+                    onChange={(e) => handleChange("longitude", e.target.value)}
+                    placeholder="Longitude (optional)"
+                    step="any"
+                  />
+                </div>
               </div>
               <div>
                 <Label>Organic Required *</Label>
