@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Building2, MapPin, ShoppingCart, User, Settings, Home, Users } from "lucide-react"
+import { Building2, MapPin, ShoppingCart, User, Settings, Home, Users, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { UserNav } from "./user-nav"
 
@@ -11,6 +11,7 @@ const navigation = [
   { name: "Profile", href: "/exporter/profile", icon: User },
   { name: "Farms", href: "/exporter/farms", icon: MapPin },
   { name: "All Farmers", href: "/exporter/contract-farming/match", icon: Users },
+  { name: "Produce Specs", href: "/exporter/specs", icon: FileText },
   { name: "Order", href: "/exporter/order", icon: ShoppingCart },
   { name: "Settings", href: "/exporter/settings", icon: Settings },
 ]
