@@ -11,6 +11,15 @@ const PRODUCE_TYPES = [
 const VARIETIES = ["Hass", "Fuerte", "Kent", "Tommy Atkins", "Other"];
 const CERTIFICATIONS = ["Organic", "GlobalG.A.P.", "KEPHIS", "Fairtrade", "Rainforest Alliance"];
 const SIZE_CODES = ["12", "14", "16", "18", "20", "22", "24"];
+const PACKAGING_TYPES = [
+  "4kg ventilated carton",
+  "10kg carton",
+  "Plastic crate",
+  "Net bag",
+  "Wooden box",
+  "Bulk bin",
+  "Other"
+];
 
 const initialState = {
   title: "",
@@ -179,7 +188,16 @@ export default function SpecForm({ onSubmit }) {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium mb-1">Packaging Type</label>
-                <Input value={form.packaging_type} onChange={e => handleChange("packaging_type", e.target.value)} placeholder="e.g. 4kg ventilated carton" />
+                <select
+                  className="w-full border rounded p-2"
+                  value={form.packaging_type}
+                  onChange={e => handleChange("packaging_type", e.target.value)}
+                >
+                  <option value="">Select packaging type</option>
+                  {PACKAGING_TYPES.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1">Labeling Notes</label>
