@@ -46,7 +46,7 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
       <div className="flex-1 min-w-[150px]">
         <label className="block text-xs font-medium mb-1">County</label>
         <Select value={county} onValueChange={setCounty}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-[10px]">
             <SelectValue placeholder="Select county" />
           </SelectTrigger>
           <SelectContent>

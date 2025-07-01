@@ -43,7 +43,7 @@ function ContractPDF({ request, farmer, client }: any) {
   );
 }
 
-export default function ContractGeneratorPage() {
+function ContractContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestId = searchParams.get("requestId");
@@ -124,4 +124,12 @@ export default function ContractGeneratorPage() {
       </div>
     </DashboardLayout>
   );
-} 
+}
+
+export default function ContractGeneratorPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ContractContent />
+    </Suspense>
+  );
+}
