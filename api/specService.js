@@ -23,4 +23,14 @@ export async function saveProduceSpec(spec, clientId) {
     .select();
   if (error) throw error;
   return data[0];
+}
+
+export async function getProduceSpecs(clientId) {
+  const { data, error } = await supabase
+    .from("produce_specs")
+    .select("*")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data;
 } 

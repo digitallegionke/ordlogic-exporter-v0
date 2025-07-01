@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -92,14 +92,25 @@ const STEPS = [
   "Review & Export"
 ];
 
-export default function SpecForm({ onSubmit }) {
+export default function SpecForm({ onSubmit, initialData = null, mode = "create", onClose }) {
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState(initialState);
+  const [form, setForm] = useState(initialData || initialState);
   const [errors, setErrors] = useState({});
   const [preview, setPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [whatsAppOpen, setWhatsAppOpen] = useState(false);
   const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    if (initialData) {
+      setForm(initialData);
+    } else {
+      setForm(initialState);
+    }
+    setStep(0);
+    setErrors({});
+    setPreview(false);
+  }, [initialData]);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -139,12 +150,12 @@ export default function SpecForm({ onSubmit }) {
     e.preventDefault();
     if (validateStep()) {
       try {
-        // Get client ID from Supabase auth
         const { data: { user } } = await supabase.auth.getUser();
-        const clientId = user?.id || "11111111-2222-3333-4444-555555555555"; // fallback for testing
+        const clientId = user?.id || "11111111-2222-3333-4444-555555555555";
         await saveProduceSpec(form, clientId);
         toast.success('Specification saved to Supabase!');
         onSubmit && onSubmit(form);
+        onClose && onClose();
       } catch (err) {
         toast.error('Failed to save specification.');
       }
@@ -161,7 +172,7 @@ export default function SpecForm({ onSubmit }) {
     <Card className="max-w-2xl mx-auto mt-8 bg-[#fafbfc] shadow-lg rounded-2xl p-2 sm:p-6">
       <CardHeader>
         <h1 className="text-5xl font-extrabold text-center leading-tight mb-12 mt-8">
-          Create Produce<br />Specification Document
+          {mode === "edit" ? "Edit Produce" : "Create Produce"}<br />Specification Document
         </h1>
         {/* Stepper */}
         <div className="flex items-end justify-center gap-0 mb-2">
@@ -377,8 +388,17 @@ export default function SpecForm({ onSubmit }) {
           )}
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8">
-            {step > 0 && <Button type="button" variant="ghost" onClick={handleBack} className="flex items-center gap-2"><span>←</span>Back</Button>}
-            {step < 3 && <Button type="button" onClick={handleNext} className="flex items-center gap-2">Next<span>→</span></Button>}
+            {step > 0 && (
+              <Button type="button" variant="outline" onClick={handleBack}>Back</Button>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+              {step < STEPS.length - 1 ? (
+                <Button type="button" onClick={handleNext}>Next</Button>
+              ) : (
+                <Button type="submit" disabled={saving}>{mode === "edit" ? "Save Changes" : "Save"}</Button>
+              )}
+            </div>
           </div>
         </form>
       </CardContent>
