@@ -169,240 +169,55 @@ export default function SpecForm({ onSubmit, initialData = null, mode = "create"
   };
 
   return (
-    <div>
-      <div>
-        <CardHeader>
-          <h1 className="text-5xl font-extrabold text-center leading-tight mb-12 mt-8">
-            {mode === "edit" ? "Edit Produce" : "Create Produce"}<br />Specification Document
-          </h1>
-          {/* Stepper */}
-          <div className="flex items-end justify-center gap-0 mb-2">
-            {STEPS.map((label, idx) => (
-              <React.Fragment key={label}>
-                <div className={`flex flex-col items-center min-w-[120px] ${idx % 2 === 1 ? 'mt-6' : ''}`}> {/* Stagger steps 2 and 4 lower */}
-                  <div
-                    className={`w-14 h-14 flex items-center justify-center rounded-full mb-1 shadow-lg transition-all duration-200
-                      ${step === idx ? 'bg-black text-white font-extrabold text-3xl scale-110 shadow-2xl' : 'bg-gray-100 text-gray-300 font-bold text-2xl'}
-                      `}
-                    aria-current={step === idx ? 'step' : undefined}
-                  >
-                    {idx + 1}
-                  </div>
-                  <span className={`mt-1 text-lg ${step === idx ? 'font-extrabold text-black' : 'font-semibold text-gray-300'}`}>{label}</span>
-                </div>
-                {idx < STEPS.length - 1 && (
-                  <div className="h-0.5 w-20 bg-gray-200 mx-2 rounded-full opacity-50" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </CardHeader>
-        <div className="pt-2">
-          <form onSubmit={handleSubmit} className="space-y-10">
-            {/* Step 0: Produce Info */}
-            {step === 0 && (
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Title *</label>
-                  <Input value={form.title} onChange={e => handleChange("title", e.target.value)} placeholder="e.g. EU Export Spec – Organic Hass Avocado" className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.title ? 'border-red-500' : ''}`} />
-                  {errors.title && <div className="text-xs text-red-500 mt-1">{errors.title}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Produce Type *</label>
-                  <Select value={form.produce_type} onValueChange={v => handleChange("produce_type", v)}>
-                    <SelectTrigger className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.produce_type ? 'border-red-500' : ''}`} >
-                      <SelectValue placeholder="Select produce" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRODUCE_TYPES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {errors.produce_type && <div className="text-xs text-red-500 mt-1">{errors.produce_type}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Variety *</label>
-                  <Select value={form.variety} onValueChange={v => handleChange("variety", v)}>
-                    <SelectTrigger className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.variety ? 'border-red-500' : ''}`} >
-                      <SelectValue placeholder="Select variety" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VARIETIES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {errors.variety && <div className="text-xs text-red-500 mt-1">{errors.variety}</div>}
-                </div>
-              </div>
-            )}
-            {step === 0 && <div className="border-b my-6" />}
-            {/* Step 1: Quality Requirements */}
-            {step === 1 && (
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Dry Matter % *</label>
-                  <Input value={form.dry_matter} onChange={e => handleChange("dry_matter", e.target.value)} placeholder="e.g. ≥24%" className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.dry_matter ? 'border-red-500' : ''}`} />
-                  {errors.dry_matter && <div className="text-xs text-red-500 mt-1">{errors.dry_matter}</div>}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Grade *</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["Extra Class", "Class I", "Class II"].map((g) => (
-                      <label key={g} className="flex items-center gap-1">
-                        <Checkbox checked={form.grade.includes(g)} onCheckedChange={() => handleCheckbox("grade", g)} />
-                        <span className="text-xs">{g}</span>
-                      </label>
-                    ))}
-                  </div>
-                  {errors.grade && <div className="text-xs text-red-500 mt-1">{errors.grade}</div>}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Min Weight (g) *</label>
-                    <Input type="number" value={form.weight_min} onChange={e => handleChange("weight_min", e.target.value)} className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.weight ? 'border-red-500' : ''}`} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Max Weight (g) *</label>
-                    <Input type="number" value={form.weight_max} onChange={e => handleChange("weight_max", e.target.value)} className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.weight ? 'border-red-500' : ''}`} />
-                  </div>
-                </div>
-                {errors.weight && <div className="text-xs text-red-500 mt-1">{errors.weight}</div>}
-                <div>
-                  <label className="block text-xs font-medium mb-1">Size Codes *</label>
-                  <Select value={form.size_code[0] || ""} onValueChange={v => handleChange("size_code", [v])}>
-                    <SelectTrigger className={`rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary ${errors.size_code ? 'border-red-500' : ''}`} >
-                      <SelectValue placeholder="Select size code" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SIZE_CODES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  {errors.size_code && <div className="text-xs text-red-500 mt-1">{errors.size_code}</div>}
-                </div>
-              </div>
-            )}
-            {step === 1 && <div className="border-b my-6" />}
-            {/* Step 2: Certifications & Packaging */}
-            {step === 2 && (
-              <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm space-y-6">
-                <div>
-                  <label className="block text-xs font-medium mb-1">Certifications</label>
-                  <div className="flex flex-wrap gap-2">
-                    {CERTIFICATIONS.map((c) => (
-                      <label key={c} className="flex items-center gap-1">
-                        <Checkbox checked={form.certifications.includes(c)} onCheckedChange={() => handleCheckbox("certifications", c)} />
-                        <span className="text-xs">{c}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Residue Limits</label>
-                  <Input value={form.residue_limits} onChange={e => handleChange("residue_limits", e.target.value)} placeholder="e.g. EU MRLs" className="rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Packaging Type</label>
-                  <Select value={form.packaging_type} onValueChange={v => handleChange("packaging_type", v)}>
-                    <SelectTrigger className="rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary" >
-                      <SelectValue placeholder="Select packaging" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PACKAGING_TYPES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Labeling Instructions</label>
-                  <Input value={form.labeling} onChange={e => handleChange("labeling", e.target.value)} placeholder="e.g. Exporter name, batch, etc." className="rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary" />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1">Additional Notes</label>
-                  <Input value={form.additional_notes} onChange={e => handleChange("additional_notes", e.target.value)} placeholder="Any extra requirements or notes" className="rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary" />
-                </div>
-              </div>
-            )}
-            {step === 2 && <div className="border-b my-6" />}
-            {/* Step 3: Review & Export */}
-            {step === 3 && (
-              <div className="bg-gray-50 rounded-xl p-4 sm:p-6 shadow-inner space-y-6">
-                <h3 className="text-lg font-semibold mb-2">Review Your Specification</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-gray-500">Title</div>
-                    <div className="font-medium">{form.title}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Produce Type</div>
-                    <div className="font-medium">{form.produce_type}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Variety</div>
-                    <div className="font-medium">{form.variety}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Dry Matter %</div>
-                    <div className="font-medium">{form.dry_matter}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Grade</div>
-                    <div className="font-medium">{form.grade.join(', ')}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Weight Range (g)</div>
-                    <div className="font-medium">{form.weight_min} - {form.weight_max}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Size Code</div>
-                    <div className="font-medium">{form.size_code.join(', ')}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Certifications</div>
-                    <div className="font-medium">{form.certifications.join(', ')}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Residue Limits</div>
-                    <div className="font-medium">{form.residue_limits}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Packaging Type</div>
-                    <div className="font-medium">{form.packaging_type}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Labeling</div>
-                    <div className="font-medium">{form.labeling}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500">Additional Notes</div>
-                    <div className="font-medium">{form.additional_notes}</div>
-                  </div>
-                </div>
-                <Separator className="my-4" />
-                <div className="flex flex-wrap gap-2">
-                  <PDFDownloadLink document={<SpecPDF data={form} />} fileName="produce-spec.pdf">
-                    {({ loading }) => (
-                      <Button variant="outline" className="min-w-[140px] flex items-center justify-center">{loading ? <span className="animate-spin mr-2">⏳</span> : <span className="mr-2">⬇️</span>}Download PDF</Button>
-                    )}
-                  </PDFDownloadLink>
-                  <Button type="submit" className="min-w-[140px] flex items-center justify-center" disabled={saving}>{saving ? <span className="animate-spin mr-2">⏳</span> : <span className="mr-2">💾</span>}Save to Supabase</Button>
-                  <Input placeholder="Farmer WhatsApp Number" value={phone} onChange={e => setPhone(e.target.value)} className="w-56 rounded-lg px-4 py-3 text-base placeholder:text-gray-400 focus:ring-2 focus:ring-primary" />
-                  <Button variant="secondary" onClick={handleWhatsApp} disabled={!phone} className="min-w-[180px] flex items-center justify-center"><span className="mr-2">📤</span>Send to Farmer via WhatsApp</Button>
-                </div>
-              </div>
-            )}
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-8">
-              {step > 0 && (
-                <Button type="button" variant="outline" onClick={handleBack}>Back</Button>
-              )}
-              <div className="flex gap-2 ml-auto">
-                <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-                {step < STEPS.length - 1 ? (
-                  <Button type="button" onClick={handleNext}>Next</Button>
-                ) : (
-                  <Button type="submit" disabled={saving}>{mode === "edit" ? "Save Changes" : "Save"}</Button>
-                )}
-              </div>
+    <div className="flex flex-col justify-start items-end w-[584px] overflow-hidden gap-[23px] p-0 rounded-lg bg-white">
+      {/* Title and subtitle */}
+      <div className="flex flex-col justify-start items-start self-stretch gap-1">
+        <p className="self-stretch w-[544px] text-xl font-semibold text-left text-black">Produce Specification Document</p>
+        <p className="self-stretch w-[544px] text-xs font-medium text-left text-[#484848]">Fill in the Specification Document as an accurate guide for the farmer</p>
+      </div>
+      {/* Stepper */}
+      <div className="flex justify-between items-start self-stretch">
+        {STEPS.map((label, idx) => (
+          <div key={label} className={`flex flex-col justify-start items-center gap-[13px] ${step === idx ? '' : 'opacity-30'}`}> 
+            <div className="flex flex-col justify-center items-center h-[30px] w-[30px] rounded-[66.67px] bg-black">
+              <p className="w-[13.33px] text-[12.5px] font-bold text-center text-white">{idx + 1}</p>
             </div>
-          </form>
+            <p className="w-[136px] text-[10px] font-semibold text-center text-black">{label}</p>
+          </div>
+        ))}
+      </div>
+      {/* Form fields for step 0 */}
+      {step === 0 && (
+        <div className="flex justify-start items-center self-stretch gap-2">
+          <div className="flex flex-col items-start w-[544px] gap-2">
+            <p className="text-xs font-semibold text-left text-black">Title*</p>
+            <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+              <input className="w-full text-xs font-semibold text-[#484848]/30 bg-transparent outline-none" placeholder="e.g. EU Export Spec - Organic Hass Avocado" value={form.title} onChange={e => handleChange('title', e.target.value)} />
+            </div>
+          </div>
+          <div className="flex flex-col items-start w-[268px] gap-2">
+            <p className="text-xs font-semibold text-left text-black">Produce Type*</p>
+            <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+              <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.produce_type} onChange={e => handleChange('produce_type', e.target.value)}>
+                <option value="">Produce Type</option>
+                {PRODUCE_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex flex-col items-start w-[268px] gap-2">
+            <p className="text-xs font-semibold text-left text-black">Variety*</p>
+            <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+              <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.variety} onChange={e => handleChange('variety', e.target.value)}>
+                <option value="">Select variety</option>
+                {VARIETIES.map(v => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
+      )}
+      {/* Next button */}
+      <div className="flex justify-center items-center gap-2.5 px-12 py-2.5 rounded-lg bg-black cursor-pointer" onClick={handleNext}>
+        <p className="text-sm font-semibold text-left text-white">Next</p>
       </div>
     </div>
   );
