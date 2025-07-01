@@ -42,16 +42,45 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
 
   return (
     <div className="w-full flex flex-col md:flex-row md:items-end gap-4 mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-      {/* County Dropdown */}
+      {/* Produce Multi-select - now first */}
+      <div className="flex-1 min-w-[180px]">
+        <label className="block text-xs font-medium mb-1">Produce</label>
+        <Popover open={produceOpen} onOpenChange={setProduceOpen}>
+          <Button
+            type="button"
+            className="w-full justify-between bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-sm"
+            onClick={() => setProduceOpen(!produceOpen)}
+            variant="outline"
+          >
+            <span className="text-sm">{produce.length ? produce.join(", ") : "Select produce"}</span>
+            <span className="ml-2">&#9662;</span>
+          </Button>
+          {produceOpen && (
+            <div className="absolute z-50 mt-2 w-full bg-white border rounded shadow-lg max-h-60 overflow-y-auto p-2">
+              {PRODUCE_TYPES.map((item) => (
+                <div
+                  key={item}
+                  className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50 rounded cursor-pointer text-sm"
+                  onClick={() => handleProduceChange(item)}
+                >
+                  <Checkbox checked={produce.includes(item)} readOnly />
+                  <span className="text-sm">{item}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Popover>
+      </div>
+      {/* County Dropdown - now second */}
       <div className="flex-1 min-w-[150px]">
         <label className="block text-xs font-medium mb-1">County</label>
         <Select value={county} onValueChange={setCounty}>
-          <SelectTrigger className="w-full bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-[10px]">
-            <SelectValue placeholder="Select county" />
+          <SelectTrigger className="w-full bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-sm">
+            <SelectValue placeholder="Select county" className="text-sm" />
           </SelectTrigger>
           <SelectContent>
             {COUNTIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
+              <SelectItem key={c} value={c} className="text-sm">{c}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -66,7 +95,7 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
             value={minAcreage}
             onChange={e => setMinAcreage(e.target.value)}
             placeholder="Min"
-            className="w-full"
+            className="w-full bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-[10px]"
           />
         </div>
         <div className="flex-1">
@@ -77,42 +106,13 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
             value={maxAcreage}
             onChange={e => setMaxAcreage(e.target.value)}
             placeholder="Max"
-            className="w-full"
+            className="w-full bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-[10px]"
           />
         </div>
       </div>
-      {/* Produce Multi-select */}
-      <div className="flex-1 min-w-[180px]">
-        <label className="block text-xs font-medium mb-1">Produce</label>
-        <Popover open={produceOpen} onOpenChange={setProduceOpen}>
-          <Button
-            type="button"
-            className="w-full justify-between"
-            onClick={() => setProduceOpen(!produceOpen)}
-            variant="outline"
-          >
-            {produce.length ? produce.join(", ") : "Select produce"}
-            <span className="ml-2">&#9662;</span>
-          </Button>
-          {produceOpen && (
-            <div className="absolute z-50 mt-2 w-full bg-white border rounded shadow-lg max-h-60 overflow-y-auto p-2">
-              {PRODUCE_TYPES.map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50 rounded cursor-pointer"
-                  onClick={() => handleProduceChange(item)}
-                >
-                  <Checkbox checked={produce.includes(item)} readOnly />
-                  <span className="text-xs">{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Popover>
-      </div>
       {/* Clear Button */}
       <div className="flex-shrink-0">
-        <Button variant="outline" className="w-full" onClick={handleClear} type="button">
+        <Button variant="outline" className="w-full h-14 font-medium text-sm" onClick={handleClear} type="button">
           Clear Filters
         </Button>
       </div>
