@@ -34,10 +34,8 @@ const SpecificationForm = () => {
   useEffect(() => {
     if (selectedProduce) {
       const fetchVarieties = async () => {
-        const { data } = await supabase
-          .from('produce_varieties')
-          .select('*')
-          .eq('produce_id', selectedProduce);
+        const res = await fetch(`/api/produce/${selectedProduce}/varieties`);
+        const data = await res.json();
         setVarieties(data || []);
         if (data && data.length > 0) {
           setSelectedVariety(data[0].id);
@@ -65,42 +63,32 @@ const SpecificationForm = () => {
     }
   }, [selectedVariety, varieties]);
 
-  // Fetch specification when produce and market are selected
+  // Fetch specification when produce, market, and variety are selected
   useEffect(() => {
-    if (selectedProduce && selectedMarket) {
+    if (selectedProduce && selectedMarket && selectedVariety) {
       const fetchSpecification = async () => {
         setIsLoading(true);
-        const { data } = await supabase
-          .from('specifications')
-          .select(`
-            *,
-            spec_fields:spec_fields(*),
-            certifications:certifications(*),
-            packaging:packaging(*),
-            cold_chain:cold_chain(*)
-          `)
-          .eq('produce_id', selectedProduce)
-          .eq('market_id', selectedMarket)
-          .eq('is_active', true)
-          .single();
-
-        if (data) {
-          setSpecification(data);
-          // Initialize form data with default values
-          const initialFormData = {};
-          (data.spec_fields || []).forEach(field => {
-            initialFormData[field.id] = field.value || '';
-          });
-          setFormData(initialFormData);
-        } else {
-          setSpecification(null);
-          setFormData({});
-        }
+        const params = new URLSearchParams({
+          produce_id: selectedProduce,
+          market_id: selectedMarket,
+          variety_id: selectedVariety
+        });
+        const res = await fetch(`/api/specifications?${params.toString()}`);
+        const data = await res.json();
+        setSpecification(data);
+        // Initialize form data with default or override values
+        const initialFormData = {};
+        (data.spec_fields || []).forEach(field => {
+          // Check for override
+          const override = (data.variety_overrides || []).find(vo => vo.variety_id === selectedVariety && vo.override_value);
+          initialFormData[field.id] = override ? override.override_value : field.value || '';
+        });
+        setFormData(initialFormData);
         setIsLoading(false);
       };
       fetchSpecification();
     }
-  }, [selectedProduce, selectedMarket]);
+  }, [selectedProduce, selectedMarket, selectedVariety]);
 
   const handleInputChange = (fieldId, value) => {
     setFormData(prev => ({
