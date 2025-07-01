@@ -4,14 +4,21 @@ import SpecForm from "@/components/SpecForm";
 import { useEffect, useState } from "react";
 import { getProduceSpecs, saveProduceSpec } from "@/api/specService";
 import { supabase } from "@/lib/supabaseClient";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
+interface ProduceSpec {
+  id: string;
+  title: string;
+  produce_type: string;
+  variety: string;
+  created_at: string;
+  [key: string]: any;
+}
+
 export default function ClientSpecsPage() {
-  const [specs, setSpecs] = useState([]);
+  const [specs, setSpecs] = useState<ProduceSpec[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editSpec, setEditSpec] = useState(null);
+  const [editSpec, setEditSpec] = useState<ProduceSpec | null>(null);
 
   useEffect(() => {
     async function fetchSpecs() {
@@ -24,21 +31,18 @@ export default function ClientSpecsPage() {
       setLoading(false);
     }
     fetchSpecs();
-  }, [modalOpen]);
+  }, [editSpec]);
 
   const handleCreate = () => {
     setEditSpec(null);
-    setModalOpen(true);
   };
 
-  const handleEdit = (spec) => {
+  const handleEdit = (spec: ProduceSpec) => {
     setEditSpec(spec);
-    setModalOpen(true);
   };
 
-  const handleClose = () => {
-    setModalOpen(false);
-    setEditSpec(null);
+  const handleFormSubmit = () => {
+    setEditSpec(null); // Reset form after submit
   };
 
   return (
@@ -46,43 +50,42 @@ export default function ClientSpecsPage() {
       <div className="max-w-4xl mx-auto mt-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Produce Specification Sheets</h1>
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleCreate}>Create Spec Sheet</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl w-full p-0 bg-transparent shadow-none border-none">
-              <SpecForm
-                onSubmit={handleClose}
-                initialData={editSpec}
-                mode={editSpec ? "edit" : "create"}
-                onClose={handleClose}
-              />
-            </DialogContent>
-          </Dialog>
+          <Button onClick={handleCreate}>Create Spec Sheet</Button>
+        </div>
+        {/* SpecForm always visible above the table */}
+        <div className="mb-8 bg-white rounded-xl shadow p-6">
+          <SpecForm
+            onSubmit={handleFormSubmit}
+            initialData={editSpec ? editSpec : null}
+            mode={editSpec ? "edit" : "create"}
+            onClose={handleFormSubmit}
+          />
         </div>
         {loading ? (
           <div>Loading...</div>
         ) : (
-          <div className="bg-white rounded-xl shadow p-4">
-            <table className="min-w-full text-sm">
+          <div className="bg-white rounded-2xl shadow-lg border border-border p-0 overflow-x-auto">
+            <table className="min-w-full text-sm rounded-2xl overflow-hidden">
               <thead>
-                <tr className="border-b">
-                  <th className="py-2 px-3 text-left">Title</th>
-                  <th className="py-2 px-3 text-left">Produce Type</th>
-                  <th className="py-2 px-3 text-left">Variety</th>
-                  <th className="py-2 px-3 text-left">Created</th>
-                  <th className="py-2 px-3 text-left">Actions</th>
+                <tr className="bg-muted/80">
+                  <th className="py-3 px-4 text-left font-semibold text-primary">Title</th>
+                  <th className="py-3 px-4 text-left font-semibold text-primary">Produce Type</th>
+                  <th className="py-3 px-4 text-left font-semibold text-primary">Variety</th>
+                  <th className="py-3 px-4 text-left font-semibold text-primary">Created</th>
+                  <th className="py-3 px-4 text-left font-semibold">
+                    <span className="inline-block bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-bold">Actions</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {specs.map((spec) => (
-                  <tr key={spec.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-3 font-semibold">{spec.title}</td>
-                    <td className="py-2 px-3">{spec.produce_type}</td>
-                    <td className="py-2 px-3">{spec.variety}</td>
-                    <td className="py-2 px-3">{new Date(spec.created_at).toLocaleDateString()}</td>
-                    <td className="py-2 px-3 flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEdit(spec)}>Edit</Button>
+                {specs.map((spec, idx) => (
+                  <tr key={spec.id} className={`border-b last:border-0 ${idx % 2 === 0 ? 'bg-muted/50' : 'bg-white'} hover:bg-primary/5 transition`}>
+                    <td className="py-3 px-4 font-semibold whitespace-nowrap">{spec.title}</td>
+                    <td className="py-3 px-4 whitespace-nowrap">{spec.produce_type}</td>
+                    <td className="py-3 px-4 whitespace-nowrap">{spec.variety}</td>
+                    <td className="py-3 px-4 whitespace-nowrap">{new Date(spec.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-4 flex gap-2 items-center">
+                      <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary/10" onClick={() => handleEdit(spec)}>Edit</Button>
                       {/* Add View and Delete actions here if needed */}
                     </td>
                   </tr>
