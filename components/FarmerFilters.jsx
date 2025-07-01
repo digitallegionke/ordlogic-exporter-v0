@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover } from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const COUNTIES = [
@@ -18,7 +18,6 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
   const [minAcreage, setMinAcreage] = useState(filters.minAcreage || "");
   const [maxAcreage, setMaxAcreage] = useState(filters.maxAcreage || "");
   const [produce, setProduce] = useState(filters.produce || []);
-  const [produceOpen, setProduceOpen] = useState(false);
 
   const handleProduceChange = (item) => {
     setProduce((prev) =>
@@ -45,17 +44,19 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
       {/* Produce Multi-select - now first */}
       <div className="flex-1 min-w-[180px]">
         <label className="block text-xs font-medium mb-1">Produce</label>
-        <Popover open={produceOpen} onOpenChange={setProduceOpen}>
-          <Button
-            type="button"
-            className="w-full justify-between bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-sm"
-            variant="outline"
-          >
-            <span className="text-sm">{produce.length ? produce.join(", ") : "Select produce"}</span>
-            <span className="ml-2">&#9662;</span>
-          </Button>
-          {produceOpen && (
-            <div className="absolute z-50 mt-2 w-full bg-white border rounded shadow-lg max-h-60 overflow-y-auto p-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              className="w-full justify-between bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-sm"
+              variant="outline"
+            >
+              <span className="text-sm">{produce.length ? produce.join(", ") : "Select produce"}</span>
+              <span className="ml-2">&#9662;</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="p-2 w-full min-w-[180px]">
+            <div className="max-h-60 overflow-y-auto">
               {PRODUCE_TYPES.map((item) => (
                 <div
                   key={item}
@@ -67,7 +68,7 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
                 </div>
               ))}
             </div>
-          )}
+          </PopoverContent>
         </Popover>
       </div>
       {/* County Dropdown - now second */}
