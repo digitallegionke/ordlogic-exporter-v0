@@ -109,7 +109,7 @@ export default function AllFarmersPage() {
         />
         <Card>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -167,6 +167,31 @@ export default function AllFarmersPage() {
                   )}
                 </TableBody>
               </Table>
+            </div>
+            {/* Mobile card layout */}
+            <div className="block md:hidden space-y-4">
+              {filteredFarmers.length === 0 ? (
+                <div className="text-center text-red-500 text-xs">No farmers found.</div>
+              ) : (
+                filteredFarmers.map((farmer) => (
+                  <div key={farmer.id} className="border rounded-lg p-4 bg-gray-50 shadow-sm">
+                    <div className="font-semibold text-base mb-1">{farmer.name || <span className="text-gray-400">No name</span>}</div>
+                    <div className="text-xs text-muted-foreground mb-2">ID: {farmer.id}</div>
+                    <div className="flex items-center gap-1 text-xs mb-1"><PhoneIcon className="w-4 h-4 text-gray-400" /> {farmer.phone_number || <span className="text-gray-400">No phone</span>}</div>
+                    <div className="text-xs mb-1"><span className="font-medium">County:</span> {countyMap[farmer.county] || farmer.county || <span className="text-gray-400">-</span>}</div>
+                    <div className="text-xs mb-1"><span className="font-medium">Drop-off Hub:</span> {hubMap[farmer.hub_id] || farmer.hub_id || <span className="text-gray-400">-</span>}</div>
+                    <div className="text-xs mb-1"><span className="font-medium">Acreage:</span> {farmer.acreage ? `${farmer.acreage} acres` : <span className="text-gray-400">-</span>}</div>
+                    <div className="text-xs mb-1"><span className="font-medium">Crops:</span> {farmer.crop ? (
+                      <span className="flex flex-wrap gap-1 mt-1">{farmer.crop.split(',').map((crop: string) => (
+                        <Badge key={crop.trim()} variant="outline" className="bg-green-100 text-green-700 border-green-200 text-xs">{crop.trim()}</Badge>
+                      ))}</span>
+                    ) : <Badge variant="outline" className="bg-gray-100 text-gray-400 border-gray-200 text-xs">No crops</Badge>}</div>
+                    <div className="flex justify-end mt-2">
+                      <button className="p-1 hover:bg-gray-100 rounded" title="Edit"><Pencil className="w-4 h-4 text-gray-400" /></button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
