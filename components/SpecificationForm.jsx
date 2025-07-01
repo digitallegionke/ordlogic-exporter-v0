@@ -116,7 +116,7 @@ const SpecificationForm = () => {
           <option value="">Select Produce</option>
           {produceList.map(produce => (
             <option key={produce.id} value={produce.id}>
-              {produce.name} ({produce.variety})
+              {produce.name}
             </option>
           ))}
         </select>
