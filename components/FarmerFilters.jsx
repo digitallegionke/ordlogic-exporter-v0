@@ -85,18 +85,28 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
       <div className="flex-1 min-w-[180px]">
         <label className="block text-xs font-medium mb-1">Produce</label>
         <Popover open={produceOpen} onOpenChange={setProduceOpen}>
-          <SelectTrigger className="w-full" onClick={() => setProduceOpen(!produceOpen)}>
-            <span className="truncate">{produce.length ? produce.join(", ") : "Select produce"}</span>
-          </SelectTrigger>
+          <Button
+            type="button"
+            className="w-full justify-between"
+            onClick={() => setProduceOpen(!produceOpen)}
+            variant="outline"
+          >
+            {produce.length ? produce.join(", ") : "Select produce"}
+            <span className="ml-2">&#9662;</span>
+          </Button>
           {produceOpen && (
-            <SelectContent className="max-h-60 overflow-y-auto w-full bg-white z-50 border rounded shadow-lg p-2">
+            <div className="absolute z-50 mt-2 w-full bg-white border rounded shadow-lg max-h-60 overflow-y-auto p-2">
               {PRODUCE_TYPES.map((item) => (
-                <div key={item} className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50 rounded cursor-pointer" onClick={() => handleProduceChange(item)}>
+                <div
+                  key={item}
+                  className="flex items-center gap-2 py-1 px-2 hover:bg-gray-50 rounded cursor-pointer"
+                  onClick={() => handleProduceChange(item)}
+                >
                   <Checkbox checked={produce.includes(item)} readOnly />
                   <span className="text-xs">{item}</span>
                 </div>
               ))}
-            </SelectContent>
+            </div>
           )}
         </Popover>
       </div>

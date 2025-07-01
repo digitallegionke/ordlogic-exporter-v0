@@ -9,6 +9,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Phone as PhoneIcon } from "lucide-react";
+import FarmerFilters from "@/components/FarmerFilters";
 
 // Mock farmer data fallback
 const MOCK_FARMERS = [
@@ -68,6 +69,10 @@ export default function AllFarmersPage() {
   const [loading, setLoading] = useState(true);
   const [farmers, setFarmers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({ county: "", minAcreage: "", maxAcreage: "", produce: [] });
+
+  const handleFilterChange = (newFilters: any) => setFilters(newFilters);
+  const handleClearFilters = () => setFilters({ county: "", minAcreage: "", maxAcreage: "", produce: [] });
 
   useEffect(() => {
     const fetchFarmers = async () => {
@@ -86,14 +91,31 @@ export default function AllFarmersPage() {
     fetchFarmers();
   }, []);
 
-  // Filter farmers by search
+  // Advanced filtering logic
   const filteredFarmers = farmers.filter((farmer) => {
     const q = search.toLowerCase();
-    return (
+    // Search filter
+    const matchesSearch =
       (farmer.name && farmer.name.toLowerCase().includes(q)) ||
       (farmer.phone_number && farmer.phone_number.toLowerCase().includes(q)) ||
-      (farmer.county && farmer.county.toLowerCase().includes(q))
-    );
+      (farmer.county && farmer.county.toLowerCase().includes(q));
+    // County filter
+    const matchesCounty = !filters.county || (countyMap[farmer.county] || farmer.county) === filters.county;
+    // Acreage filter
+    const minAcreage = filters.minAcreage ? parseFloat(filters.minAcreage) : null;
+    const maxAcreage = filters.maxAcreage ? parseFloat(filters.maxAcreage) : null;
+    const matchesAcreage =
+      (minAcreage === null || (farmer.acreage && Number(farmer.acreage) >= minAcreage)) &&
+      (maxAcreage === null || (farmer.acreage && Number(farmer.acreage) <= maxAcreage));
+    // Produce filter
+    const matchesProduce =
+      !filters.produce.length ||
+      (typeof farmer.crop === 'string' && farmer.crop.length > 0
+        ? filters.produce.some((p) =>
+            farmer.crop.toLowerCase().split(",").map((c: string) => c.trim()).includes(p.toLowerCase())
+          )
+        : false);
+    return matchesSearch && matchesCounty && matchesAcreage && matchesProduce;
   });
 
   return (
@@ -101,6 +123,11 @@ export default function AllFarmersPage() {
       <Toaster position="top-right" />
       <div className="max-w-6xl mx-auto mt-8">
         <h2 className="text-2xl font-bold mb-4">Registered Farmers</h2>
+        <FarmerFilters
+          filters={filters}
+          onChange={handleFilterChange}
+          onClear={handleClearFilters}
+        />
         <Input
           className="mb-4 max-w-md"
           placeholder="Search farmers by name, phone, county"
