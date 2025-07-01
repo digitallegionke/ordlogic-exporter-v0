@@ -11,6 +11,9 @@ const SpecificationForm = () => {
   const [produceList, setProduceList] = useState([]);
   const [marketList, setMarketList] = useState([]);
   const [selectedProduce, setSelectedProduce] = useState('');
+  const [varieties, setVarieties] = useState([]);
+  const [selectedVariety, setSelectedVariety] = useState('');
+  const [growingSeasons, setGrowingSeasons] = useState([]);
   const [selectedMarket, setSelectedMarket] = useState('');
   const [specification, setSpecification] = useState(null);
   const [formData, setFormData] = useState({});
@@ -26,6 +29,41 @@ const SpecificationForm = () => {
     };
     fetchInitialData();
   }, []);
+
+  // Fetch varieties when produce is selected
+  useEffect(() => {
+    if (selectedProduce) {
+      const fetchVarieties = async () => {
+        const { data } = await supabase
+          .from('produce_varieties')
+          .select('*')
+          .eq('produce_id', selectedProduce);
+        setVarieties(data || []);
+        if (data && data.length > 0) {
+          setSelectedVariety(data[0].id);
+          setGrowingSeasons(data[0].growing_seasons || []);
+        } else {
+          setSelectedVariety('');
+          setGrowingSeasons([]);
+        }
+      };
+      fetchVarieties();
+    } else {
+      setVarieties([]);
+      setSelectedVariety('');
+      setGrowingSeasons([]);
+    }
+  }, [selectedProduce]);
+
+  // Set growing seasons when variety is selected
+  useEffect(() => {
+    if (selectedVariety && varieties.length > 0) {
+      const variety = varieties.find(v => v.id === selectedVariety);
+      setGrowingSeasons(variety?.growing_seasons || []);
+    } else {
+      setGrowingSeasons([]);
+    }
+  }, [selectedVariety, varieties]);
 
   // Fetch specification when produce and market are selected
   useEffect(() => {
@@ -108,6 +146,30 @@ const SpecificationForm = () => {
           ))}
         </select>
       </div>
+
+      {/* Variety Dropdown */}
+      {varieties.length > 0 && (
+        <div className="mb-6">
+          <label className="block font-medium mb-1">Variety</label>
+          <select
+            value={selectedVariety}
+            onChange={e => setSelectedVariety(e.target.value)}
+            className="border rounded px-3 py-2 w-full"
+          >
+            <option value="">Select Variety</option>
+            {varieties.map(variety => (
+              <option key={variety.id} value={variety.id}>
+                {variety.name}
+              </option>
+            ))}
+          </select>
+          {growingSeasons.length > 0 && (
+            <div className="mt-2 text-sm text-gray-600">
+              <span className="font-semibold">Growing Seasons:</span> {growingSeasons.join(', ')}
+            </div>
+          )}
+        </div>
+      )}
 
       {isLoading && <div className="text-gray-500">Loading specification...</div>}
 
