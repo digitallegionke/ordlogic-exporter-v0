@@ -49,7 +49,6 @@ export default function FarmerFilters({ filters, onChange, onClear }) {
           <Button
             type="button"
             className="w-full justify-between bg-[#f7f7f7] border border-gray-200 font-medium h-14 text-sm"
-            onClick={() => setProduceOpen(!produceOpen)}
             variant="outline"
           >
             <span className="text-sm">{produce.length ? produce.join(", ") : "Select produce"}</span>
