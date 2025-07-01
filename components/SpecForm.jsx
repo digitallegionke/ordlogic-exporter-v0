@@ -10,6 +10,7 @@ import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '
 import toast from 'react-hot-toast';
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { DialogTitle } from "@/components/ui/dialog";
 
 const PRODUCE_TYPES = [
   "Avocado", "Mango", "Banana", "Pineapple", "Coffee", "Tea", "Macadamia", "French Beans", "Snow Peas", "Passion Fruit"
@@ -169,56 +170,207 @@ export default function SpecForm({ onSubmit, initialData = null, mode = "create"
   };
 
   return (
-    <div className="flex flex-col justify-start items-end w-[584px] overflow-hidden gap-[23px] p-0 rounded-lg bg-white">
-      {/* Title and subtitle */}
-      <div className="flex flex-col justify-start items-start self-stretch gap-1">
-        <p className="self-stretch w-[544px] text-xl font-semibold text-left text-black">Produce Specification Document</p>
-        <p className="self-stretch w-[544px] text-xs font-medium text-left text-[#484848]">Fill in the Specification Document as an accurate guide for the farmer</p>
-      </div>
-      {/* Stepper */}
-      <div className="flex justify-between items-start self-stretch">
-        {STEPS.map((label, idx) => (
-          <div key={label} className={`flex flex-col justify-start items-center gap-[13px] ${step === idx ? '' : 'opacity-30'}`}> 
-            <div className="flex flex-col justify-center items-center h-[30px] w-[30px] rounded-[66.67px] bg-black">
-              <p className="w-[13.33px] text-[12.5px] font-bold text-center text-white">{idx + 1}</p>
+    <>
+      <DialogTitle className="sr-only">Produce Specification Document</DialogTitle>
+      <div className="flex flex-col justify-start items-end w-full max-w-[584px] sm:w-[584px] overflow-hidden gap-[23px] p-0 rounded-lg bg-white transition-all duration-300 ease-in-out">
+        {/* Title and subtitle */}
+        <div className="flex flex-col justify-start items-start self-stretch gap-1">
+          <p className="self-stretch w-[544px] text-xl font-semibold text-left text-black">Produce Specification Document</p>
+          <p className="self-stretch w-[544px] text-xs font-medium text-left text-[#484848]">Fill in the Specification Document as an accurate guide for the farmer</p>
+        </div>
+        {/* Stepper */}
+        <div className="flex justify-between items-start self-stretch">
+          {STEPS.map((label, idx) => (
+            <div key={label} className={`flex flex-col justify-start items-center gap-[13px] ${step === idx ? '' : 'opacity-30'}`}> 
+              <div className="flex flex-col justify-center items-center h-[30px] w-[30px] rounded-[66.67px] bg-black">
+                <p className="w-[13.33px] text-[12.5px] font-bold text-center text-white">{idx + 1}</p>
+              </div>
+              <p className="w-[136px] text-[10px] font-semibold text-center text-black">{label}</p>
             </div>
-            <p className="w-[136px] text-[10px] font-semibold text-center text-black">{label}</p>
+          ))}
+        </div>
+        {/* Step 1: Produce Info */}
+        {step === 0 && (
+          <div className="flex justify-start items-center self-stretch gap-2">
+            <div className="flex flex-col items-start w-[544px] gap-2">
+              <p className="text-xs font-semibold text-left text-black">Title*</p>
+              <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                <input className="w-full text-xs font-semibold text-[#484848]/30 bg-transparent outline-none" placeholder="e.g. EU Export Spec - Organic Hass Avocado" value={form.title} onChange={e => handleChange('title', e.target.value)} />
+              </div>
+            </div>
+            <div className="flex flex-col items-start w-[268px] gap-2">
+              <p className="text-xs font-semibold text-left text-black">Produce Type*</p>
+              <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.produce_type} onChange={e => handleChange('produce_type', e.target.value)}>
+                  <option value="">Produce Type</option>
+                  {PRODUCE_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="flex flex-col items-start w-[268px] gap-2">
+              <p className="text-xs font-semibold text-left text-black">Variety*</p>
+              <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.variety} onChange={e => handleChange('variety', e.target.value)}>
+                  <option value="">Select variety</option>
+                  {VARIETIES.map(v => <option key={v} value={v}>{v}</option>)}
+                </select>
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-      {/* Form fields for step 0 */}
-      {step === 0 && (
-        <div className="flex justify-start items-center self-stretch gap-2">
-          <div className="flex flex-col items-start w-[544px] gap-2">
-            <p className="text-xs font-semibold text-left text-black">Title*</p>
-            <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
-              <input className="w-full text-xs font-semibold text-[#484848]/30 bg-transparent outline-none" placeholder="e.g. EU Export Spec - Organic Hass Avocado" value={form.title} onChange={e => handleChange('title', e.target.value)} />
+        )}
+        {/* Step 2: Quality & Grading */}
+        {step === 1 && (
+          <div className="flex flex-col gap-4 w-full">
+            <div className="flex gap-4">
+              <div className="flex flex-col w-[268px] gap-2">
+                <p className="text-xs font-semibold text-left text-black">Grade*</p>
+                <div className="flex gap-2">
+                  {['Extra Class', 'Class I', 'Class 2'].map(g => (
+                    <label key={g} className="flex items-center gap-1">
+                      <input type="checkbox" checked={form.grade.includes(g)} onChange={() => handleCheckbox('grade', g)} className="accent-black" />
+                      <span className="text-xs font-medium text-[#484848]">{g}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col w-[268px] gap-2">
+                <p className="text-xs font-semibold text-left text-black">Dry Matter %*</p>
+                <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                  <input className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" placeholder="e.g. 24%" value={form.dry_matter} onChange={e => handleChange('dry_matter', e.target.value)} />
+                </div>
+              </div>
+              <div className="flex flex-col w-[268px] gap-2">
+                <p className="text-xs font-semibold text-left text-black">Min Weight (g)*</p>
+                <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                  <input type="number" className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" placeholder="0" value={form.weight_min} onChange={e => handleChange('weight_min', e.target.value)} />
+                </div>
+              </div>
+              <div className="flex flex-col w-[268px] gap-2">
+                <p className="text-xs font-semibold text-left text-black">Max Weight (g)*</p>
+                <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10">
+                  <input type="number" className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" placeholder="0" value={form.weight_max} onChange={e => handleChange('weight_max', e.target.value)} />
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col w-full gap-2">
+              <p className="text-xs font-semibold text-left text-black">Size Codes*</p>
+              <div className="flex gap-2">
+                {SIZE_CODES.map(code => (
+                  <label key={code} className="flex items-center gap-1">
+                    <input type="checkbox" checked={form.size_code.includes(code)} onChange={() => handleCheckbox('size_code', code)} className="accent-black" />
+                    <span className="text-xs font-medium text-[#484848]">{code}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="flex flex-col items-start w-[268px] gap-2">
-            <p className="text-xs font-semibold text-left text-black">Produce Type*</p>
-            <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
-              <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.produce_type} onChange={e => handleChange('produce_type', e.target.value)}>
-                <option value="">Produce Type</option>
-                {PRODUCE_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
-              </select>
+        )}
+        {/* Step 3: Certifications & Packaging */}
+        {step === 2 && (
+          <div className="flex flex-col gap-4 w-full">
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-left text-black">Certifications</p>
+              <div className="flex gap-2 flex-wrap">
+                {CERTIFICATIONS.map(cert => (
+                  <label key={cert} className="flex items-center gap-1">
+                    <input type="checkbox" checked={form.certifications.includes(cert)} onChange={() => handleCheckbox('certifications', cert)} className="accent-black" />
+                    <span className="text-xs font-medium text-[#484848]">{cert}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-left text-black">Packaging Type</p>
+              <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10 max-w-[268px]">
+                <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.packaging_type} onChange={e => handleChange('packaging_type', e.target.value)}>
+                  <option value="">Select packaging</option>
+                  {PACKAGING_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-left text-black">Labeling Instructions</p>
+              <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10 max-w-[544px]">
+                <input className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" placeholder="e.g. EU Export Spec – Organic Hass Avocado" value={form.labeling} onChange={e => handleChange('labeling', e.target.value)} />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-semibold text-left text-black">Additional Notes</p>
+              <div className="flex items-center w-full px-4 py-2.5 rounded-md border border-black/10 max-w-[544px]">
+                <input className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" placeholder="Any extra requirements or notes" value={form.additional_notes} onChange={e => handleChange('additional_notes', e.target.value)} />
+              </div>
             </div>
           </div>
-          <div className="flex flex-col items-start w-[268px] gap-2">
-            <p className="text-xs font-semibold text-left text-black">Variety*</p>
-            <div className="flex justify-between items-center w-full px-4 py-2.5 rounded-md border border-black/10">
-              <select className="w-full text-xs font-medium text-[#484848] bg-transparent outline-none" value={form.variety} onChange={e => handleChange('variety', e.target.value)}>
-                <option value="">Select variety</option>
-                {VARIETIES.map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
+        )}
+        {/* Step 4: Review & Export */}
+        {step === 3 && (
+          <div className="flex flex-col gap-4 w-full">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-gray-500">Title</div>
+                  <div className="font-medium text-black">{form.title}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Produce Type</div>
+                  <div className="font-medium text-black">{form.produce_type}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Variety</div>
+                  <div className="font-medium text-black">{form.variety}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Dry Matter %</div>
+                  <div className="font-medium text-black">{form.dry_matter}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Grade</div>
+                  <div className="font-medium text-black">{form.grade.join(', ')}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Weight Range (g)</div>
+                  <div className="font-medium text-black">{form.weight_min} - {form.weight_max}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Size Code</div>
+                  <div className="font-medium text-black">{form.size_code.join(', ')}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Certifications</div>
+                  <div className="font-medium text-black">{form.certifications.join(', ')}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Packaging Type</div>
+                  <div className="font-medium text-black">{form.packaging_type}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Labeling</div>
+                  <div className="font-medium text-black">{form.labeling}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Additional Notes</div>
+                  <div className="font-medium text-black">{form.additional_notes}</div>
+                </div>
+              </div>
             </div>
+            <div className="flex gap-2 mt-4">
+              <button type="button" className="px-8 py-2.5 rounded-lg border border-black text-black bg-white text-sm font-semibold" onClick={() => {/* PDF Download logic */}}>Download PDF</button>
+              <button type="submit" className="px-8 py-2.5 rounded-lg bg-black text-white text-sm font-semibold">Save</button>
+            </div>
+          </div>
+        )}
+        {/* Navigation Buttons */}
+        <div className="flex justify-between w-full mt-6">
+          {step > 0 && (
+            <button type="button" className="px-8 py-2.5 rounded-lg border border-black text-black bg-white text-sm font-semibold" onClick={handleBack}>Back</button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            {step < 3 && (
+              <button type="button" className="px-12 py-2.5 rounded-lg bg-black text-white text-sm font-semibold" onClick={handleNext}>Next</button>
+            )}
           </div>
         </div>
-      )}
-      {/* Next button */}
-      <div className="flex justify-center items-center gap-2.5 px-12 py-2.5 rounded-lg bg-black cursor-pointer" onClick={handleNext}>
-        <p className="text-sm font-semibold text-left text-white">Next</p>
       </div>
-    </div>
+    </>
   );
 } 
